@@ -194,6 +194,9 @@ html.ready .stage{visibility:visible}
   background:rgba(255,255,255,.55);border:5px solid #9CC6F2;border-radius:10px;
   box-shadow:5px 5px 0 rgba(27,87,184,.12)}
 .poplist .gcard.newest{border-color:#2E7BE0}
+/* 방명록 맨 위 공지 — 목록과 함께 밀려 올라가지 않는다 */
+.popnotice{position:absolute;display:grid;place-items:center;text-align:center;
+  font-family:var(--f-body);color:#1B57B8;border-bottom:4px dotted #9CC6F2}
 .popsend{position:absolute;font-family:var(--f-body);color:#1B57B8;background:#EAF4FE;
   border:6px solid #2E7BE0;box-shadow:8px 8px 0 rgba(27,87,184,.28);cursor:pointer;padding:0;
   image-rendering:-moz-crisp-edges;image-rendering:crisp-edges;image-rendering:pixelated}
@@ -1800,8 +1803,18 @@ const BUILD = {
 
   /* 방명록 — 연필을 누르면 가운데 메모지가 나오고 거기에 쓴다 */
   guest(P){
+    const lbox = (P.listBox || [P.paper[0]+200, P.paper[1]+150, P.paper[2]-120, P.paper[3]-90]).slice();
+    /* 맨 위 공지 한 줄. 그만큼 목록을 아래로 내린다 */
+    const nSize = (P.listSize || 36) >= 48 ? 36 : 24;
+    const note = el("div","popnotice");
+    put(note, [lbox[0], lbox[1], lbox[2], lbox[1] + nSize + 24]);
+    note.style.fontSize = nSize + "px";
+    note.textContent = "방명록은 연필\u270F\uFE0F을 누르면 쓸 수 있어요";
+    popbox.appendChild(note);
+    lbox[1] += nSize + 44;
+
     const list = el("div","poplist");
-    put(list, P.listBox || [P.paper[0]+200, P.paper[1]+150, P.paper[2]-120, P.paper[3]-90]);
+    put(list, lbox);
     list.style.padding = "0"; list.style.fontSize = (P.listSize || 36) + "px";
     popbox.appendChild(list);
     const draw = () => {
@@ -1832,7 +1845,7 @@ const BUILD = {
     const m = P.memo.r;
     put(ta, P.taBox || [m[0]+70, m[1]+150, m[2]-70, m[3]-230]);
     ta.style.fontSize = "36px";
-    ta.placeholder = "센구팔에게 한마디 남겨주세요";
+    ta.placeholder = "센구팔에게 한마디 남겨주세요\n\n· 이름 없이 익명으로 올라가요\n· 남긴 뒤엔 수정·삭제가 안 돼요";
     ta.maxLength = 200; ta.hidden = true;
     popbox.appendChild(ta);
 
