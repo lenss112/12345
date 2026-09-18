@@ -189,6 +189,11 @@ html.ready .stage{visibility:visible}
 .poplist{position:absolute;overflow-y:auto;overscroll-behavior:contain;touch-action:pan-y;
   font-family:var(--f-body);color:#2A4E8C;-webkit-overflow-scrolling:touch}
 .poplist .row{margin-bottom:14px;white-space:pre-wrap;word-break:break-word}
+/* 방명록 — 한 사람의 글이 한 칸씩 들어간다 */
+.poplist .gcard{margin-bottom:18px;padding:16px 18px;white-space:pre-wrap;word-break:break-word;
+  background:rgba(255,255,255,.55);border:5px solid #9CC6F2;border-radius:10px;
+  box-shadow:5px 5px 0 rgba(27,87,184,.12)}
+.poplist .gcard.newest{border-color:#2E7BE0}
 .popsend{position:absolute;font-family:var(--f-body);color:#1B57B8;background:#EAF4FE;
   border:6px solid #2E7BE0;box-shadow:8px 8px 0 rgba(27,87,184,.28);cursor:pointer;padding:0;
   image-rendering:-moz-crisp-edges;image-rendering:crisp-edges;image-rendering:pixelated}
@@ -1807,17 +1812,15 @@ const BUILD = {
           (SHEET.busy ? "불러오는 중…" : "아직 남겨진 말이 없어요") + '</div>';
         return;
       }
-      g.forEach((v, i) => {
-        const d = el("div","row");
+      /* 먼저 남긴 글이 위로 오게 뒤집어 그린다. 글마다 한 칸씩 */
+      g.slice().reverse().forEach((v, i, arr) => {
+        const d = el("div","gcard");
         d.textContent = (v.nick ? v.nick + " — " : "") + v.text;
-        /* 가장 최근 글은 밑줄로 표시한다 */
-        if (i === 0){
-          d.style.textDecoration = "underline";
-          d.style.textDecorationThickness = "3px";
-          d.style.textUnderlineOffset = "6px";
-        }
+        if (i === arr.length - 1) d.classList.add("newest");   /* 가장 최근 글 */
         list.appendChild(d);
       });
+      /* 새 글이 맨 아래에 쌓이므로 아래쪽을 보여 준다 */
+      list.scrollTop = list.scrollHeight;
     };
     /* 가지고 있는 것을 먼저 보여 주고, 새 것이 오면 다시 그린다 */
     const gpr = SHEET.on() ? SHEET.load() : null;
