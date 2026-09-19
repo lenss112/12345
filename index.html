@@ -850,6 +850,12 @@ let curS = 1, placed = false, reflow = false;
 const canPan = () => (hiX - loX > .5) || (hiY - loY > .5);
 
 const clamp = (v,lo,hi) => v < lo ? lo : v > hi ? hi : v;
+/* 글을 쓰는 중인가 — 안드로이드는 키보드가 올라오면 화면 높이가 확 줄어든다.
+   그걸 가로 화면으로 바뀐 걸로 착각하면 안 된다 */
+const onKeyboard = () => {
+  const a = document.activeElement;
+  return !!a && (a.tagName === "TEXTAREA" || a.tagName === "INPUT");
+};
 const vwOf = () => document.documentElement.clientWidth;
 const vhOf = () => document.documentElement.clientHeight;
 
@@ -942,6 +948,9 @@ function applyOffset(){
 }
 
 function fitStage(){
+  /* 키보드가 올라와 화면이 낮아진 것뿐이면 판을 건드리지 않는다.
+     (카카오톡 안에서 열면 방명록 쓰려는 순간 팝업이 닫히던 문제) */
+  if (onKeyboard() && placed) return;
   const vw = vwOf(), vh = vhOf();
   const next = pickMode(vw, vh);
   /* 판이 바뀌면 그림뿐 아니라 누르는 자리도 다시 놓아야 한다.
@@ -1699,7 +1708,9 @@ function closePop(){
    칸 안(그림 위)을 눌러도 닫히지 않는다 */
 pop.addEventListener("click", e => { if (e.target === pop) closePop(); });
 addEventListener("keydown", e => { if (e.key === "Escape" && popNow) closePop(); });
-addEventListener("resize", fitPop);
+addEventListener("resize", () => { if (!onKeyboard()) fitPop(); });
+/* 키보드가 내려가면 그때 다시 맞춘다 */
+document.addEventListener("focusout", () => setTimeout(() => { placeHotspots(); fitPop(); }, 150), true);
 
 /* ---------- 팝업마다 얹는 것 ---------- */
 /* 춤 영상 주소. data: 는 사파리에서 안 열려서 blob 으로 한 번 바꿔 둔다 */
